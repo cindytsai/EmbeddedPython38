@@ -5,6 +5,7 @@
 #include "mockLIBYT.h"
 
 int myrank;
+int randomData(int SEED, int MAX, int MIN, int *array, int array_len);
 
 int main(int argc, char *argv[])
 {
@@ -34,7 +35,20 @@ int main(int argc, char *argv[])
   		exit(1);
   	}
 
-  	
+  	// Generate random length array
+  	int *array;
+  	int array_len = 10;
+  	array = (int*) malloc(array_len * sizeof(int));
+  	if ( randomData(100, 100, 0, array, array_len) != 0) {
+  		printf("On rank %d, randomData() failed.\n", myrank);
+  		exit(1);
+  	}
+
+  	// Update the libyt python module __dict__
+  	if(yt_set_parameter("prop1", array, array_len) != 0) {
+  		printf("On rank %d, yt_set_parameter('prop1', array, array_len) \n", myrank);
+  		exit(1);
+  	}
 
 	/*
 	Run a .py file directly.
@@ -47,3 +61,19 @@ int main(int argc, char *argv[])
 
   	return 0;
 }
+
+int randomData(int SEED, int MAX, int MIN, int *array, int array_len) {
+	
+	int num;
+
+	srand(SEED);
+
+	for(int i = 0; i < array_len; i = i+1) {
+		num = rand() % (MAX + 1 - MIN) + MIN;
+		array[i] = num;
+		printf("num = %d\n", num);
+	}
+	
+	return 0;
+}
+

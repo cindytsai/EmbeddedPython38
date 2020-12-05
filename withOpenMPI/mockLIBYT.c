@@ -4,8 +4,9 @@
 #include <mpi.h>
 
 extern int myrank;
-
-
+PyObject *libyt_module = NULL;
+PyObject *libyt_module_dict = NULL;
+PyObject *libyt_prop1, *libyt_prop2, *libyt_prop3;
 static PyMethodDef libyt_method_list[] = {
 	{NULL, NULL, 0, NULL}
 };
@@ -28,8 +29,7 @@ int create_libyt_module() {
 }
 
 int init_libyt_module(const char *fname) {
-	PyObject *libyt_module = NULL;
-	PyObject *libyt_module_dict = NULL;
+
 
 	// Check if successfully create libyt python module
 	if((libyt_module = PyImport_AddModule("libyt")) == NULL) {
@@ -44,7 +44,7 @@ int init_libyt_module(const char *fname) {
 	}
 
 	// Create properties and parameters for libyt python module
-	PyObject *libyt_prop1, *libyt_prop2, *libyt_prop3;
+
 	libyt_prop1 = PyDict_New();
 	libyt_prop2 = PyDict_New();
 	libyt_prop3 = PyDict_New();
@@ -54,14 +54,14 @@ int init_libyt_module(const char *fname) {
 	PyDict_SetItemString(libyt_module_dict, "prop3", libyt_prop3);
 
 	// Load full "fname".py script
-	const int command_width = 8 + strlen( fname );   // 8 = "import " + '\0'
-	char *command = (char*) malloc(command_width * sizeof(char));
-	sprintf(command, "import %s", fname);
-	if (PyRun_SimpleString(command) != 0) {
-		printf("On rank %d, %s Failed.\n", myrank, command);
-		exit(1);
-	}
-	free(command);
+	// const int command_width = 8 + strlen( fname );   // 8 = "import " + '\0'
+	// char *command = (char*) malloc(command_width * sizeof(char));
+	// sprintf(command, "import %s", fname);
+	// if (PyRun_SimpleString(command) != 0) {
+	// 	printf("On rank %d, %s Failed.\n", myrank, command);
+	// 	exit(1);
+	// }
+	// free(command);
 
 	return 0;
 }
@@ -100,8 +100,57 @@ int init_python(int argc, char *argv[]) {
    	return 0;
 }
 
-// int libyt_set_parameter(int *data_array, int len) {
+int yt_set_parameter(const char *prop_name, const int *data_array, const int data_array_len) {
+	// // Get the libyt python module
+	// PyObject *libyt_module = NULL;
+	// PyObject *libyt_module_dict = NULL;
 
-// 	return 0;
-// }
+	// // Check if successfully create libyt python module
+	// if((libyt_module = PyImport_AddModule("libyt")) == NULL) {
+	// 	printf("On rank %d, libyt_module = PyImport_AddModule('libyt')) == NULL\n", myrank);
+	// 	exit(1);
+	// }
+
+	// // Check if we can get the dictionary from libyt python module
+	// if((libyt_module_dict = PyModule_GetDict(libyt_module)) == NULL) {
+	// 	printf("On rank %d, libyt_module_dict = PyModule_GetDict(libyt_module)) == NULL\n", myrank);
+	// 	exit(1);
+	// }
+
+	// // Check that libyt_module_dict is type dictionary
+	// if(!PyDict_Check(libyt_module_dict)) {
+	// 	printf("On rank %d, PyDict_Check(libyt_module_dict) != true\n", myrank);
+	// 	exit(1);
+	// }
+
+	// // Check that libyt __dict__ has key "prop_name"
+	// if(!PyDict_Contains(libyt_module_dict, Py_DecodeLocale(prop_name, NULL))) {
+	// 	printf("On rank %d, No key %s in libyt_module_dict\n", myrank, prop_name);
+	// 	exit(1);
+	// }
+
+	// Convert data_array to python list
+	PyObject *list_val = PyList_New(0);
+	PyObject *item;
+	for (int i = 0; i < data_array_len; i = i+1){
+		item = PyLong_FromLong(data_array[i]);
+		if (PyList_Append(list_val, item) != 0) {
+			printf("On rank %d, list_val.append(%d) failed\n", myrank, data_array[i]);
+			exit(1);
+		}
+	}
+
+	// Update dictionary
+	if(PyDict_SetItemString(libyt_module_dict, prop_name, list_val) != 0) {
+		printf("On rank %d, Update dict failed.\n", myrank);
+		exit(1);
+	}
+
+	return 0;
+}
+
+int yt_inline() {
+
+	return 0;
+}
 
