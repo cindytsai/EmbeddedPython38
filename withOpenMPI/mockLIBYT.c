@@ -27,20 +27,20 @@ int create_libyt_module() {
 	return 0;
 }
 
-int init_libyt_module() {
+int init_libyt_module(const char *fname) {
 	PyObject *libyt_module = NULL;
 	PyObject *libyt_module_dict = NULL;
 
 	// Check if successfully create libyt python module
 	if((libyt_module = PyImport_AddModule("libyt")) == NULL) {
 		printf("On rank %d, libyt_module = PyImport_AddModule('libyt')) == NULL\n", myrank);
-		exit(0);
+		exit(1);
 	}
 
 	// Check if we can get the dictionary from libyt python module
 	if((libyt_module_dict = PyModule_GetDict(libyt_module)) == NULL) {
 		printf("On rank %d, libyt_module_dict = PyModule_GetDict(libyt_module)) == NULL\n", myrank);
-		exit(0);
+		exit(1);
 	}
 
 	// Create properties and parameters for libyt python module
@@ -53,6 +53,16 @@ int init_libyt_module() {
 	PyDict_SetItemString(libyt_module_dict, "prop2", libyt_prop2);
 	PyDict_SetItemString(libyt_module_dict, "prop3", libyt_prop3);
 
+	// Load full "fname".py script
+	const int command_width = 8 + strlen( fname );   // 8 = "import " + '\0'
+	char *command = (char*) malloc(command_width * sizeof(char));
+	sprintf(command, "import %s", fname);
+	if (PyRun_SimpleString(command) != 0) {
+		printf("On rank %d, %s Failed.\n", myrank, command);
+		exit(1);
+	}
+	free(command);
+
 	return 0;
 }
 
@@ -62,9 +72,12 @@ int init_python(int argc, char *argv[]) {
 
 	if( !Py_IsInitialized() ) {
 		printf("On rank %d, Py_IsInitialized() == False\n", myrank);
-		exit(0);
+		exit(1);
 	}
 
+	/*
+	Can't use argc, argv on Ubuntu20.04, it reaches error.
+	 */
    	// wchar_t **wchar_t_argv = (wchar_t **) malloc(argc * sizeof(wchar_t *));
    	// wchar_t wchar_temp[1000];
    	// for (int i = 0; i < argc; i = i+1) {
@@ -76,12 +89,12 @@ int init_python(int argc, char *argv[]) {
 
    	if ( PyRun_SimpleString( "import sys; sys.path.insert(0,'.');" ) != 0 ) {
    		printf("On rank %d, Failed setting sys.path.\n", myrank);
-   		exit(0);
+   		exit(1);
    	}
 
    	if( PyRun_SimpleString("import gc") != 0 ) {
    		printf("On rank %d, Failed importing garbage collector.\n", myrank);
-   		exit(0);
+   		exit(1);
    	}
 
    	return 0;

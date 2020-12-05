@@ -8,3 +8,4 @@ $(BIN): $(FILE)
 clean:
 	rm -f *.out
 	rm -rf log
+	rm -rf __pycache__
