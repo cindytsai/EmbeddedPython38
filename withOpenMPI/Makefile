@@ -7,3 +7,4 @@ $(BIN): $(FILE)
 
 clean:
 	rm -f *.out
+	rm -rf log

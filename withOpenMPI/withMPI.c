@@ -7,6 +7,9 @@ int myrank;
 
 int main(int argc, char *argv[])
 {
+	const char *fname = "./inline.py";
+	FILE *fp;
+
   	MPI_Init(&argc, &argv);
   	MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
 
@@ -25,8 +28,11 @@ int main(int argc, char *argv[])
   		exit(0);
   	}
 
-  	// fp = fopen(fname, "r");
-  	// PyRun_SimpleFile(fp, fname);
+  	
+
+  	// Run the python script.
+  	fp = fopen(fname, "r");
+  	PyRun_SimpleFile(fp, fname);
 
   	MPI_Finalize(); /* MPI should be finalized */
   	Py_Finalize();  /* after finalizing Python, since it's python that are using OpenMPI */
