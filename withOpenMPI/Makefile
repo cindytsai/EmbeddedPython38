@@ -1,5 +1,5 @@
 BIN  := withMPI.out
-FILE := withMPI.c
+FILE := withMPI.c mockLIBYT.c
 COMPILER := mpicc
 
 $(BIN): $(FILE)
