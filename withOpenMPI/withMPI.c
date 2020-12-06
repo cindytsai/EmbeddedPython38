@@ -12,8 +12,8 @@ int main(int argc, char *argv[])
 	/*
 	Run a .py file directly.
 	 */
-	const char *full_fname = "./inline.py";
-	FILE *fp;
+	// const char *full_fname = "./inline.py";
+	// FILE *fp;
 	
 	const char *fname = "inline";
 

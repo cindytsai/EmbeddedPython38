@@ -1,5 +1,7 @@
 .idea/*
 *.out
 *.exe
-stdout
+log
 stderr
+stdout
+__pycache__
