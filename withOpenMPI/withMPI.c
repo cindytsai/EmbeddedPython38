@@ -50,14 +50,20 @@ int main(int argc, char *argv[])
   		exit(1);
   	}
 
+  	// Run def inline() in "fname".py python script
+  	if(yt_inline(fname) != 0) {
+  		printf("On rank %d, yt_inline(%s) failed \n", myrank, fname);
+  		exit(1);
+  	}
+
 	/*
 	Run a .py file directly.
 	 */
-  	fp = fopen(full_fname, "r");
-  	PyRun_SimpleFile(fp, full_fname);
+  	// fp = fopen(full_fname, "r");
+  	// PyRun_SimpleFile(fp, full_fname);
 
-  	MPI_Finalize(); /* MPI should be finalized */
-  	Py_Finalize();  /* after finalizing Python, since it's python that are using OpenMPI */
+  	MPI_Finalize(); /* MPI should be finalized before finalizing python*/
+  	Py_Finalize();  /* since it's python that are using OpenMPI */
 
   	return 0;
 }
@@ -66,12 +72,12 @@ int randomData(int SEED, int MAX, int MIN, int *array, int array_len) {
 	
 	int num;
 
-	srand(SEED);
+	srand(SEED + myrank);
 
 	for(int i = 0; i < array_len; i = i+1) {
 		num = rand() % (MAX + 1 - MIN) + MIN;
 		array[i] = num;
-		printf("num = %d\n", num);
+		// printf("num = %d\n", num);
 	}
 	
 	return 0;

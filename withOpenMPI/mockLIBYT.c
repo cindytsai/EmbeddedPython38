@@ -54,14 +54,14 @@ int init_libyt_module(const char *fname) {
 	PyDict_SetItemString(libyt_module_dict, "prop3", libyt_prop3);
 
 	// Load full "fname".py script
-	// const int command_width = 8 + strlen( fname );   // 8 = "import " + '\0'
-	// char *command = (char*) malloc(command_width * sizeof(char));
-	// sprintf(command, "import %s", fname);
-	// if (PyRun_SimpleString(command) != 0) {
-	// 	printf("On rank %d, %s Failed.\n", myrank, command);
-	// 	exit(1);
-	// }
-	// free(command);
+	const int command_width = 8 + strlen( fname );   // 8 = "import " + '\0'
+	char *command = (char*) malloc(command_width * sizeof(char));
+	sprintf(command, "import %s", fname);
+	if (PyRun_SimpleString(command) != 0) {
+		printf("On rank %d, %s Failed.\n", myrank, command);
+		exit(1);
+	}
+	free(command);
 
 	return 0;
 }
@@ -101,21 +101,6 @@ int init_python(int argc, char *argv[]) {
 }
 
 int yt_set_parameter(const char *prop_name, const int *data_array, const int data_array_len) {
-	// // Get the libyt python module
-	// PyObject *libyt_module = NULL;
-	// PyObject *libyt_module_dict = NULL;
-
-	// // Check if successfully create libyt python module
-	// if((libyt_module = PyImport_AddModule("libyt")) == NULL) {
-	// 	printf("On rank %d, libyt_module = PyImport_AddModule('libyt')) == NULL\n", myrank);
-	// 	exit(1);
-	// }
-
-	// // Check if we can get the dictionary from libyt python module
-	// if((libyt_module_dict = PyModule_GetDict(libyt_module)) == NULL) {
-	// 	printf("On rank %d, libyt_module_dict = PyModule_GetDict(libyt_module)) == NULL\n", myrank);
-	// 	exit(1);
-	// }
 
 	// // Check that libyt_module_dict is type dictionary
 	// if(!PyDict_Check(libyt_module_dict)) {
@@ -149,8 +134,18 @@ int yt_set_parameter(const char *prop_name, const int *data_array, const int dat
 	return 0;
 }
 
-int yt_inline() {
+int yt_inline(const char *fname) {
 
+	// Run def yt_inline() in script
+	const int command_width = 13 + strlen( fname );   // 13 = ".yt_inline()" + '\0'
+	char *command = (char*) malloc(command_width * sizeof(char));
+	sprintf(command, "%s.yt_inline()", fname);
+	if (PyRun_SimpleString(command) != 0) {
+		printf("On rank %d, %s Failed.\n", myrank, command);
+		exit(1);
+	}
+	free(command);
+	
 	return 0;
 }
 
