@@ -2,6 +2,7 @@
 #include <Python.h>
 #include <stdlib.h>
 #include <mpi.h>
+#include "mockLIBYT.h"
 
 extern int myrank;
 PyObject *libyt_module = NULL;
@@ -130,6 +131,33 @@ int yt_set_parameter(const char *prop_name, const int *data_array, const int dat
 		printf("On rank %d, Update dict failed.\n", myrank);
 		exit(1);
 	}
+
+	return 0;
+}
+
+int yt_set_field_list(const char *prop_name, int num, struct yt_field **field_list) {
+
+	PyObject *dict_val = PyDict_New();
+	PyObject *key, *val;
+
+	// Set items for dictionary dict_val
+	for (int i = 0; i < num; i++){
+		key = PyUnicode_FromString((*field_list)[i].field_name); // after python3.5
+		val = PyUnicode_FromString((*field_list)[i].field_define_type);
+		if( PyDict_SetItem(dict_val, key, val) != 0){
+			printf("On rank %d, add key:val pair to dict_val failed\n", myrank);
+			exit(1);
+		}
+	}
+
+	if(PyDict_SetItemString(libyt_module_dict, prop_name, dict_val) != 0) {
+		printf("On rank %d, Update dict failed.\n", myrank);
+		exit(1);
+	}
+
+	Py_DECREF(dict_val);
+	Py_DECREF(key);
+	Py_DECREF(val);
 
 	return 0;
 }

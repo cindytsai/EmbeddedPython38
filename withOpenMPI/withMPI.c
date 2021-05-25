@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 	// const char *full_fname = "./inline.py";
 	// FILE *fp;
 	
-	const char *fname = "inline";
+    const char *fname = "inline";
 
   	MPI_Init(&argc, &argv);
   	MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
@@ -49,6 +49,27 @@ int main(int argc, char *argv[])
   		printf("On rank %d, yt_set_parameter('prop1', array, array_len) \n", myrank);
   		exit(1);
   	}
+
+    // Append dictionary
+    int num = 3;
+    struct yt_field *field_list = malloc( num * sizeof(*field_list));
+
+    for (int i = 0; i < num; i++){
+      // field_list[i].field_name = "Dens";
+      field_list[i].field_define_type = "cell-centered";
+    }
+
+    char a[] = "FIELD_NAME";
+    char b[10] = "B_FIELD";
+
+    field_list[0].field_name = "Dens";
+    field_list[1].field_name = a;
+    field_list[2].field_name = b;
+
+    if(yt_set_field_list("prop3", num, &field_list) != 0) {
+      printf("On rank %d, yt_set_field_list('prop3', num, field_list) \n", myrank);
+      exit(1);
+    }
 
   	// Run def inline() in "fname".py python script
   	if(yt_inline(fname) != 0) {

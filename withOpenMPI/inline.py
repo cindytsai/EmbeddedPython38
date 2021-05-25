@@ -17,7 +17,8 @@ def yt_inline():
 	print ("======================")
 	print ("myrank = ", myrank)
 	print ("after yt_set_parameter, libyt.prop1 = ", libyt.prop1)
-	
+	print ("libyt.prop3 = ", libyt.prop3)
+
 	## gather information from other rank
 	################################################
 	libyt.prop2 = MPI.COMM_WORLD.gather(libyt.prop1, root=0)
