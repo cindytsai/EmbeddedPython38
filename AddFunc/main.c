@@ -1,13 +1,26 @@
 #include <Python.h>
 #include <stdio.h>
+#include <mpi.h>
 
 static int numargs=0;
+void (*foo) (int);
+
+void temp_func(int num){
+  printf("#%d\n",num);
+}
 
 /* Return the number of arguments of the application command line */
 static PyObject* emb_numargs(PyObject *self, PyObject *args)
 {
     if(!PyArg_ParseTuple(args, ":numargs"))
         return NULL;
+    
+    FILE *fp = fopen("write.txt", "w");
+    fputs("Write to file", fp);
+    fclose(fp);
+
+    (*foo) (1);
+    
     return PyLong_FromLong(numargs);
 }
 
@@ -29,7 +42,10 @@ static PyObject* PyInit_emb(void)
 
 int main( int argc, char *argv[]){
 
+  MPI_Init(&argc, &argv);
+
 	numargs = argc;
+  foo = temp_func;
 	PyImport_AppendInittab("emb", &PyInit_emb);
 
 	Py_SetProgramName( Py_DecodeLocale("yt_inline", NULL) );
@@ -63,6 +79,7 @@ int main( int argc, char *argv[]){
 	}
 
 	Py_Finalize();
+  MPI_Finalize();
 
 	return 0;
 
