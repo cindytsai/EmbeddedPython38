@@ -14,24 +14,29 @@ print ("----------------------")
 print ("before yt_set_parameter(), libyt.prop1 = ", libyt.prop1)
 
 def yt_inline():
-	print ("======================")
-	print ("myrank = ", myrank)
-	print ("after yt_set_parameter, libyt.prop1 = ", libyt.prop1)
-	print ("libyt.prop3 = ", libyt.prop3)
 
-	## gather information from other rank
-	################################################
-	libyt.prop2 = MPI.COMM_WORLD.gather(libyt.prop1, root=0)
+    print (dir(libyt))
+    print ("======================")
+    libyt.fputs("Write to file : Here I am.", "write.txt")
+#        print (libyt.FPUTS_FLAG)
+    print ("======================")
+    print ("myrank = ", myrank)
+    print ("after yt_set_parameter, libyt.prop1 = ", libyt.prop1)
+    print ("libyt.prop3 = ", libyt.prop3)
+
+    ## gather information from other rank
+    ################################################
+    libyt.prop2 = MPI.COMM_WORLD.gather(libyt.prop1, root=0)
 	
-	## broadcast libyt.prop1 in rank0 to other ranks
-	################################################
-	# libyt.prop2 = MPI.COMM_WORLD.bcast(libyt.prop1, root=0)	
-	# print ("libyt.prop2 = ", libyt.prop2)
+    ## broadcast libyt.prop1 in rank0 to other ranks
+    ################################################
+    # libyt.prop2 = MPI.COMM_WORLD.bcast(libyt.prop1, root=0)	
+    # print ("libyt.prop2 = ", libyt.prop2)
 	
-	if myrank == 0:
-		print ("----------------------")
-		print ("gather information libyt.prop1 from other ranks, ")
-		print ("and stored in libyt.prop2...")
-		print ("libyt.prop2 = ", libyt.prop2)
+    if myrank == 0:
+    	print ("----------------------")
+    	print ("gather information libyt.prop1 from other ranks, ")
+    	print ("and stored in libyt.prop2...")
+    	print ("libyt.prop2 = ", libyt.prop2)
 
 

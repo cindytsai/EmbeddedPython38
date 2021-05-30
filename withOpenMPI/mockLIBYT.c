@@ -1,5 +1,6 @@
 #include <string.h>
 #include <Python.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <mpi.h>
 #include "mockLIBYT.h"
@@ -8,7 +9,39 @@ extern int myrank;
 PyObject *libyt_module = NULL;
 PyObject *libyt_module_dict = NULL;
 PyObject *libyt_prop1, *libyt_prop2, *libyt_prop3;
+
+// New Custom Error, will initialize in PyInit_fputs
+static PyObject *StringTooShortError = NULL;
+
+// C extended python method
+static PyObject* method_fputs(PyObject *self, PyObject *args){
+	char *str, *filename = NULL;
+	int bytes_copied = -1;
+
+	// Parse Arguments
+	if ( !PyArg_ParseTuple(args, "ss", &str, &filename) ){
+		return NULL; // return NULL to indicate failure.
+	}
+
+	// Raising Custom Exception in python C extension module,
+	// even though we can't raise exception in C.
+	if ( strlen(str) < 10 ){
+		PyErr_SetString(StringTooShortError, "String length must be greater than 10.");
+		return NULL; // return NULL to indicate failure.
+	}
+
+	FILE *fp = fopen(filename, "w");
+	bytes_copied = fputs(str, fp);
+	fclose(fp);
+
+	// The variable to be returned when the function is invoked in python
+	// You must return a PyObject* from you python C extension module 
+	// back to the python interpreter.
+	return PyLong_FromLong(bytes_copied);
+}
+
 static PyMethodDef libyt_method_list[] = {
+	{"fputs", method_fputs, METH_VARARGS, "Python interface for fputs C library function."},
 	{NULL, NULL, 0, NULL}
 };
 
@@ -17,11 +50,23 @@ static struct PyModuleDef libyt_module_definition = {
 	"libyt",
 	"libyt documentation",
 	-1,
-	libyt_method_list
+	libyt_method_list,
+	NULL, NULL, NULL, NULL
 };
 
 static PyObject* PyInit_libyt(void) {
-	return PyModule_Create(&libyt_module_definition);
+
+	// Create module
+	PyObject *module = PyModule_Create( &libyt_module_definition );
+
+	// Add custom exception
+	StringTooShortError = PyErr_NewException("fputs.StringTooShortError", NULL, NULL);
+	PyModule_AddObject(module, "StringTooShortError1", StringTooShortError);
+
+	// Add Constant
+	PyModule_AddIntConstant(module, "FPUTS_FLAG", 64);
+
+	return module;
 }
 
 int create_libyt_module() {
