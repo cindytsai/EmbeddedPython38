@@ -45,10 +45,10 @@ int main(int argc, char *argv[])
   	}
 
   	// Update the libyt python module __dict__
-  	if(yt_set_parameter("prop1", array, array_len) != 0) {
-  		printf("On rank %d, yt_set_parameter('prop1', array, array_len) \n", myrank);
-  		exit(1);
-  	}
+  	// if(yt_set_parameter("prop1", array, array_len) != 0) {
+  	// 	printf("On rank %d, yt_set_parameter('prop1', array, array_len) \n", myrank);
+  	// 	exit(1);
+  	// }
 
     // Append dictionary
     int num = 3;
@@ -66,10 +66,10 @@ int main(int argc, char *argv[])
     field_list[1].field_name = a;
     field_list[2].field_name = b;
 
-    if(yt_set_field_list("prop3", num, &field_list) != 0) {
-      printf("On rank %d, yt_set_field_list('prop3', num, field_list) \n", myrank);
-      exit(1);
-    }
+    // if(yt_set_field_list("prop3", num, &field_list) != 0) {
+    //   printf("On rank %d, yt_set_field_list('prop3', num, field_list) \n", myrank);
+    //   exit(1);
+    // }
 
   	// Run def inline() in "fname".py python script
   	if(yt_inline(fname) != 0) {
@@ -83,8 +83,9 @@ int main(int argc, char *argv[])
   	// fp = fopen(full_fname, "r");
   	// PyRun_SimpleFile(fp, full_fname);
 
+    Py_Finalize();  /* since it's python that are using OpenMPI */
   	MPI_Finalize(); /* MPI should be finalized before finalizing python*/
-  	Py_Finalize();  /* since it's python that are using OpenMPI */
+  	
 
   	return 0;
 }

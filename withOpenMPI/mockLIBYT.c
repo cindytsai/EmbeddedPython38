@@ -1,14 +1,19 @@
-#include <string.h>
 #include <Python.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <mpi.h>
-#include "mockLIBYT.h"
+#include <string.h>
 
 extern int myrank;
 PyObject *libyt_module = NULL;
 PyObject *libyt_module_dict = NULL;
 PyObject *libyt_prop1, *libyt_prop2, *libyt_prop3;
+
+typedef struct yt_field
+{
+	char *field_name;
+	char *field_define_type;
+};
 
 // New Custom Error, will initialize in PyInit_fputs
 static PyObject *StringTooShortError = NULL;
@@ -54,17 +59,38 @@ static struct PyModuleDef libyt_module_definition = {
 	NULL, NULL, NULL, NULL
 };
 
+static PyMethodDef libytSub_method_list[] = {
+	{NULL, NULL, NULL, NULL}
+};
+
+static struct PyModuleDef libytSub_module_definition = {
+	PyModuleDef_HEAD_INIT,
+	"libytSub",
+	"libyt submodule documentation",
+	-1,
+	libytSub_method_list,
+	NULL, NULL, NULL, NULL
+};
+
 static PyObject* PyInit_libyt(void) {
 
 	// Create module
 	PyObject *module = PyModule_Create( &libyt_module_definition );
 
+	if (module == NULL){
+		return NULL;
+	}
+
 	// Add custom exception
-	StringTooShortError = PyErr_NewException("fputs.StringTooShortError", NULL, NULL);
+	StringTooShortError = PyErr_NewException("libyt.StringTooShortError", NULL, NULL);
 	PyModule_AddObject(module, "StringTooShortError1", StringTooShortError);
 
 	// Add Constant
-	PyModule_AddIntConstant(module, "FPUTS_FLAG", 64);
+	PyModule_AddIntConstant(module, "LIBYT_FLAG", 64);
+
+	// Add submodule 
+	PyObject *moduleSub = PyModule_Create( &libytSub_module_definition );
+	PyModule_AddObject(module, "libytSub", moduleSub);
 
 	return module;
 }
@@ -77,27 +103,27 @@ int create_libyt_module() {
 int init_libyt_module(const char *fname) {
 
 
-	// Check if successfully create libyt python module
-	if((libyt_module = PyImport_AddModule("libyt")) == NULL) {
-		printf("On rank %d, libyt_module = PyImport_AddModule('libyt')) == NULL\n", myrank);
-		exit(1);
-	}
+	// // Check if successfully create libyt python module
+	// if((libyt_module = PyImport_AddModule("libyt")) == NULL) {
+	// 	printf("On rank %d, libyt_module = PyImport_AddModule('libyt')) == NULL\n", myrank);
+	// 	exit(1);
+	// }
 
-	// Check if we can get the dictionary from libyt python module
-	if((libyt_module_dict = PyModule_GetDict(libyt_module)) == NULL) {
-		printf("On rank %d, libyt_module_dict = PyModule_GetDict(libyt_module)) == NULL\n", myrank);
-		exit(1);
-	}
+	// // Check if we can get the dictionary from libyt python module
+	// if((libyt_module_dict = PyModule_GetDict(libyt_module)) == NULL) {
+	// 	printf("On rank %d, libyt_module_dict = PyModule_GetDict(libyt_module)) == NULL\n", myrank);
+	// 	exit(1);
+	// }
 
-	// Create properties and parameters for libyt python module
+	// // Create properties and parameters for libyt python module
 
-	libyt_prop1 = PyDict_New();
-	libyt_prop2 = PyDict_New();
-	libyt_prop3 = PyDict_New();
+	// libyt_prop1 = PyDict_New();
+	// libyt_prop2 = PyDict_New();
+	// libyt_prop3 = PyDict_New();
 
-	PyDict_SetItemString(libyt_module_dict, "prop1", libyt_prop1);
-	PyDict_SetItemString(libyt_module_dict, "prop2", libyt_prop2);
-	PyDict_SetItemString(libyt_module_dict, "prop3", libyt_prop3);
+	// PyDict_SetItemString(libyt_module_dict, "prop1", libyt_prop1);
+	// PyDict_SetItemString(libyt_module_dict, "prop2", libyt_prop2);
+	// PyDict_SetItemString(libyt_module_dict, "prop3", libyt_prop3);
 
 	// Load full "fname".py script
 	const int command_width = 8 + strlen( fname );   // 8 = "import " + '\0'
