@@ -7,7 +7,7 @@
 extern int myrank;
 PyObject *libytSub_module = NULL;
 PyObject *libytSub_module_dict = NULL;
-PyObject *libytSub_prop1, *libytSub_prop2, *libytSub_prop3;
+PyObject *libyt_prop1, *libyt_prop2, *libyt_prop3;
 
 typedef struct yt_field
 {
@@ -59,19 +59,6 @@ static struct PyModuleDef libyt_module_definition = {
 	NULL, NULL, NULL, NULL
 };
 
-static PyMethodDef libytSub_method_list[] = {
-	{NULL, NULL, NULL, NULL}
-};
-
-static struct PyModuleDef libytSub_module_definition = {
-	PyModuleDef_HEAD_INIT,
-	"libytSub",
-	"libyt submodule documentation",
-	-1,
-	libytSub_method_list,
-	NULL, NULL, NULL, NULL
-};
-
 static PyObject* PyInit_libyt(void) {
 
 	// Create module
@@ -89,16 +76,12 @@ static PyObject* PyInit_libyt(void) {
 	PyModule_AddIntConstant(module, "LIBYT_FLAG", 64);
 
 	// Add dictionary
-	libytSub_prop1 = PyDict_New();
-	libytSub_prop2 = PyDict_New();
-	libytSub_prop3 = PyDict_New();
-	PyModule_AddObject(module, "prop1", libytSub_prop1);
-	PyModule_AddObject(module, "prop2", libytSub_prop2);
-	PyModule_AddObject(module, "prop3", libytSub_prop3);
-	
-	// Add submodule 
-	libytSub_module = PyModule_Create( &libytSub_module_definition );
-	PyModule_AddObject(module, "libytSub", libytSub_module);
+	libyt_prop1 = PyDict_New();
+	libyt_prop2 = PyDict_New();
+	libyt_prop3 = PyDict_New();
+	PyModule_AddObject(module, "prop1", libyt_prop1);
+	PyModule_AddObject(module, "prop2", libyt_prop2);
+	PyModule_AddObject(module, "prop3", libyt_prop3);
 
 	return module;
 }
@@ -110,28 +93,13 @@ int create_libyt_module() {
 
 int init_libyt_module(const char *fname) {
 
-
-	// Check if successfully create libyt python module
-	// if((libytSub_module = PyImport_AddModule("libyt.libytSub")) == NULL) {
-	// 	printf("On rank %d, libyt_module = PyImport_AddModule('libyt')) == NULL\n", myrank);
-	// 	exit(1);
-	// }
-
-	// // Check if we can get the dictionary from libyt python module
-	// if((libytSub_module_dict = PyModule_GetDict(libytSub_module)) == NULL) {
-	// 	printf("On rank %d, libyt_module_dict = PyModule_GetDict(libyt_module)) == NULL\n", myrank);
-	// 	exit(1);
-	// }
-
-	// // Create properties and parameters for libyt python module
-
-	// libytSub_prop1 = PyDict_New();
-	// libytSub_prop2 = PyDict_New();
-	// libytSub_prop3 = PyDict_New();
-
-	// PyDict_SetItemString(libytSub_module_dict, "prop1", libytSub_prop1);
-	// PyDict_SetItemString(libytSub_module_dict, "prop2", libytSub_prop2);
-	// PyDict_SetItemString(libytSub_module_dict, "prop3", libytSub_prop3);
+// import newly created libyt module
+   if ( PyRun_SimpleString("import libyt\n") == 0 )
+      printf( "Import libyt module ... done\n" );
+   else{
+      printf(  "Import libyt module ... failed!\n" );
+   	  exit(1);
+   }
 
 	// Load full "fname".py script
 	const int command_width = 8 + strlen( fname );   // 8 = "import " + '\0'
@@ -182,18 +150,6 @@ int init_python(int argc, char *argv[]) {
 
 int yt_set_parameter(const char *prop_name, const int *data_array, const int data_array_len) {
 
-	// // Check that libyt_module_dict is type dictionary
-	// if(!PyDict_Check(libytSub_module_dict)) {
-	// 	printf("On rank %d, PyDict_Check(libyt_module_dict) != true\n", myrank);
-	// 	exit(1);
-	// }
-
-	// // Check that libyt __dict__ has key "prop_name"
-	// if(!PyDict_Contains(libytSub_module_dict, Py_DecodeLocale(prop_name, NULL))) {
-	// 	printf("On rank %d, No key %s in libyt_module_dict\n", myrank, prop_name);
-	// 	exit(1);
-	// }
-
 	// Convert data_array to python list
 	PyObject *list_val = PyList_New(0);
 	PyObject *item;
@@ -206,7 +162,7 @@ int yt_set_parameter(const char *prop_name, const int *data_array, const int dat
 	}
 
 	// Update dictionary
-	if(PyDict_SetItemString(libytSub_prop1, prop_name, list_val) != 0) {
+	if(PyDict_SetItemString(libyt_prop1, prop_name, list_val) != 0) {
 		printf("On rank %d, Update dict failed.\n", myrank);
 		exit(1);
 	}
@@ -229,7 +185,7 @@ int yt_set_field_list(const char *prop_name, int num, struct yt_field **field_li
 		}
 	}
 
-	if(PyDict_SetItemString(libytSub_module_dict, prop_name, dict_val) != 0) {
+	if(PyDict_SetItemString(libyt_prop2, prop_name, dict_val) != 0) {
 		printf("On rank %d, Update dict failed.\n", myrank);
 		exit(1);
 	}

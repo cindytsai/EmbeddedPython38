@@ -66,10 +66,10 @@ int main(int argc, char *argv[])
     field_list[1].field_name = a;
     field_list[2].field_name = b;
 
-    // if(yt_set_field_list("prop3", num, &field_list) != 0) {
-    //   printf("On rank %d, yt_set_field_list('prop3', num, field_list) \n", myrank);
-    //   exit(1);
-    // }
+    if(yt_set_field_list("prop3", num, &field_list) != 0) {
+      printf("On rank %d, yt_set_field_list('prop3', num, field_list) \n", myrank);
+      exit(1);
+    }
 
   	// Run def inline() in "fname".py python script
   	if(yt_inline(fname) != 0) {
