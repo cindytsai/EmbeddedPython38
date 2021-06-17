@@ -1,5 +1,5 @@
 BIN  := AddFunc.out
-FILE := main.c
+FILE := main.c methods.c
 COMPILER := mpicc
 
 $(BIN): $(FILE)
