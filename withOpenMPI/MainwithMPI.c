@@ -45,10 +45,10 @@ int main(int argc, char *argv[])
   	}
 
   	// Update the libyt python module __dict__
-  	// if(yt_set_parameter("prop1", array, array_len) != 0) {
-  	// 	printf("On rank %d, yt_set_parameter('prop1', array, array_len) \n", myrank);
-  	// 	exit(1);
-  	// }
+  	if(yt_set_parameter("prop1", array, array_len) != 0) {
+  		printf("On rank %d, yt_set_parameter('prop1', array, array_len) \n", myrank);
+  		exit(1);
+  	}
 
     // Append dictionary
     int num = 3;
