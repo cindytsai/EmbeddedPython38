@@ -4,7 +4,7 @@
 #include "methods.h"
 
 static int numargs=0;
-void (*foo) (void **); // TODO: fixed prototype type
+void (*foo) (int); // TODO: fixed prototype type
 
 /* Return the number of arguments of the application command line */
 static PyObject* emb_numargs(PyObject *self, PyObject *args)
@@ -42,7 +42,7 @@ int main( int argc, char *argv[]){
   MPI_Init(&argc, &argv);
 
 	numargs = argc;
-  	foo = temp_func;
+
 	PyImport_AppendInittab("emb", &PyInit_emb);
 
 	Py_SetProgramName( Py_DecodeLocale("yt_inline", NULL) );
@@ -63,6 +63,8 @@ int main( int argc, char *argv[]){
    		exit(1);
    	}
 
+   	foo = temp_func;
+
    	char *command = "import inline";
    	if (PyRun_SimpleString(command) != 0) {
 		printf("%s Failed.\n", command);
@@ -71,12 +73,19 @@ int main( int argc, char *argv[]){
 
 	command = "inline.yt_inline()";
 	if (PyRun_SimpleString(command) != 0) {
-		printf("%s Failed.\n", command);
+		printf("temp_func %s Failed.\n", command);
+		exit(1);
+	}
+
+	foo = temp_func2;
+	command = "inline.yt_inline()";
+	if (PyRun_SimpleString(command) != 0) {
+		printf("temp_func2 %s Failed.\n", command);
 		exit(1);
 	}
 
 	Py_Finalize();
-  MPI_Finalize();
+    MPI_Finalize();
 
 	return 0;
 
