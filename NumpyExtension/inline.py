@@ -18,6 +18,10 @@ def yt_inline():
         print(array.flags)
         
         time.sleep(5)
+        
+    array = emb.numpy_array3D(3, "field_name")
+    print(array)
+    print(type(array))
 
     return 0
 
