@@ -52,27 +52,36 @@ static PyObject* emb_NumpyArray3D(PyObject *self, PyObject *args)
     }
 
     // Create the C array to be wrapped by Numpy API and will be return
-    double *output = (double *) malloc( gid * gid * gid * sizeof(double) );
-    for (int i = 0; i < gid * gid * gid; i++){
-    	output[i] = (double) i;
-    	printf("[%p] = %lf\n", &(output[i]), output[i]);
+    long totalSize = gid * (gid+1) * (gid+2);
+    double *output = (double *) malloc( totalSize * sizeof(double) );
+    // for (int i = 0; i < totalSize; i++){
+    // 	output[i] = (double) i;
+    // 	printf("[%p] = %lf\n", &(output[i]), output[i]);
+    // }
+    for (int x = 0; x < gid; x++){
+    	for (int y = 0; y < gid + 1; y++){
+    		for (int z = 0; z < gid + 2; z++){
+    			int index = z + y * (gid + 2) + x * (gid + 2) * (gid+1);
+    			output[index] = (double) (x * 100 + y * 10 + z);
+    		}
+    	}
     }
 
     // Numpy Array
     int      nd = 3;
-    npy_intp dims[3] = {gid, gid, gid};
+    npy_intp dims[3] = {gid, gid+1, gid+2};
     int      typenum = NPY_DOUBLE;
 
-    PyArrayObject *numpy_array = PyArray_SimpleNewFromData(nd, dims, typenum, output);
+    PyObject *numpy_array = PyArray_SimpleNewFromData(nd, dims, typenum, output);
 	// To free memory as soon as the ndarray is deallocated, set the OWNDATA flag on the returned ndarray.
-    PyArray_ENABLEFLAGS(numpy_array, NPY_ARRAY_OWNDATA); // This line is important.
+    PyArray_ENABLEFLAGS( (PyArrayObject *) numpy_array, NPY_ARRAY_OWNDATA); // This line is important.
 
     // Call function (*foo)
     (*foo) (gid);
     printf("field_name = %s\n", field_name);
     
     // return numpy array object
-    return PyArray_Return(numpy_array);
+    return numpy_array;
 }
 
 static PyMethodDef EmbMethods[] = {
