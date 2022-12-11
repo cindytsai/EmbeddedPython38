@@ -1,8 +1,9 @@
 BIN  := EmbedString.out
 FILE := SimpleString.c
+COMPILER := gcc
 
 $(BIN): $(FILE)
-	gcc $(shell python3.8-config --cflags --embed) -o $(BIN) $(FILE) $(shell python3.8-config --ldflags --embed)
+	$(COMPILER) $(shell python3.8-config --cflags --embed) -o $(BIN) $(FILE) $(shell python3.8-config --ldflags --embed)
 
 clean:
-	rm -f *.out
+	rm -rf *.out __pycache__ log
