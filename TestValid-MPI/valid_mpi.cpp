@@ -36,10 +36,7 @@ int main(int argc, char* argv[]) {
 		/* read code in root */
 		if (mpi_rank == root) {
 
-			MPI_Barrier(MPI_COMM_WORLD);
-		    
 			input_line = readline(prompt);
-			printf("[input_line] %s\n", input_line);
             
 			if (input_line == NULL) {
 				done = true;
@@ -67,10 +64,8 @@ int main(int argc, char* argv[]) {
 				PyObject *src = Py_CompileString(code, "<stdin>", Py_single_input); //TODO: [NewRef]
 
 				if (src != NULL) {                                    // compiled works fine
-					printf("[src stage] 0\n");
 					if (prompt == ps1 || code[code_len + input_len - 1] == '\n') {
 						// broadcast to other ranks
-						printf("[MPI %d] prepare to broadcast.\n", mpi_rank);
 						int temp = (int) strlen(code); // TODO: truncate to int first
 						MPI_Bcast(&temp, 1, MPI_INT, root, MPI_COMM_WORLD);
 						MPI_Bcast(code, strlen(code), MPI_CHAR, root, MPI_COMM_WORLD);
@@ -89,13 +84,14 @@ int main(int argc, char* argv[]) {
 					}
 				}
 				else if (PyErr_ExceptionMatches(PyExc_SyntaxError)) { // code might not comlete yet
-					printf("[src stage] 1\n");
 					// save current exception if there is any
 					PyObject *exc, *val, *traceback, *obj;
 					PyErr_Fetch(&exc, &val, &traceback);
 
 					// compare to error msg that indicates user hasn't done input yet.
-					if (PyArg_ParseTuple(val, "sO", &err_msg, &obj) && !strcmp(err_msg, "unexpect EOF while parsing")) {
+					PyArg_ParseTuple(val, "sO", &err_msg, &obj);
+
+					if ( strcmp(err_msg, "unexpected EOF while parsing") == 0 ) {
 						Py_XDECREF(exc);
 						Py_XDECREF(val);
 						Py_XDECREF(traceback);
@@ -115,7 +111,6 @@ int main(int argc, char* argv[]) {
 					}
 				}
 				else { // real error in code
-					printf("[src stage] 2\n");
 					// clean up
 					PyErr_Print();
 					free(code);
@@ -131,9 +126,6 @@ int main(int argc, char* argv[]) {
 		}
 		/* For non-root ranks, receive broadcast from root and execute code. */
 		else {
-
-			MPI_Barrier(MPI_COMM_WORLD);
-
 			// get code length
 			int code_len;
 			MPI_Bcast(&code_len, 1, MPI_INT, root, MPI_COMM_WORLD);
@@ -142,14 +134,10 @@ int main(int argc, char* argv[]) {
 			code = (char*) malloc(code_len * sizeof(char));
 			MPI_Bcast(code, code_len, MPI_CHAR, root, MPI_COMM_WORLD);
 
-			printf("[MPI %d] receive broadcast.\n", mpi_rank);
-			printf("[MPI %d] code:\n%s\n", mpi_rank, code);
-
 			// compile and execute code
 			PyObject *src = Py_CompileString(code, "<libyt-root>", Py_single_input);
 			PyObject *dum = PyEval_EvalCode(src, global_var, local_var);
 			if (PyErr_Occurred()) {
-				printf("[MPI %d] error:\n", mpi_rank);
 				PyErr_Print();
 			}
 
