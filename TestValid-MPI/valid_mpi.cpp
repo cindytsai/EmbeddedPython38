@@ -81,6 +81,9 @@ int main(int argc, char* argv[]) {
 						free(code);
 						code = NULL;
 						prompt = ps1;
+
+						// wait
+						MPI_Barrier(MPI_COMM_WORLD);
 					}
 				}
 				else if (PyErr_ExceptionMatches(PyExc_SyntaxError)) { // code might not comlete yet
@@ -145,6 +148,9 @@ int main(int argc, char* argv[]) {
 			free(code);
 			Py_XDECREF(src);
 			Py_XDECREF(dum);
+
+			// wait
+			MPI_Barrier(MPI_COMM_WORLD);
 		}
 	}
 
