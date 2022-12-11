@@ -39,7 +39,12 @@ int main(int argc, char* argv[]) {
 			input_line = readline(prompt);
 
 			if (input_line == NULL) {
+				
 				done = true;
+				
+				// tell other ranks we're done
+				int temp = -1;
+				MPI_Bcast(&temp, 1, MPI_INT, root, MPI_COMM_WORLD);
 			}
 			else {
 				// get input line length
@@ -132,6 +137,12 @@ int main(int argc, char* argv[]) {
 			// get code length
 			int code_len;
 			MPI_Bcast(&code_len, 1, MPI_INT, root, MPI_COMM_WORLD);
+
+			// which means root is done 
+			if (code_len < 0) {
+				done = true;
+				break;
+			}
 
 			// get code
 			code = (char*) malloc((code_len + 1) * sizeof(char));
