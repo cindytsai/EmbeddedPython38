@@ -37,14 +37,14 @@ int main(int argc, char* argv[]) {
 		if (mpi_rank == root) {
 
 			input_line = readline(prompt);
-            
+
 			if (input_line == NULL) {
 				done = true;
 			}
 			else {
 				// get input line length
 				input_len = strlen(input_line);
-				if (input_len > 0) add_history(input_line);
+				//if (input_len > 0) add_history(input_line);
 				
 				// get code length
 				if (code == NULL)  code_len = 0;
@@ -134,8 +134,9 @@ int main(int argc, char* argv[]) {
 			MPI_Bcast(&code_len, 1, MPI_INT, root, MPI_COMM_WORLD);
 
 			// get code
-			code = (char*) malloc(code_len * sizeof(char));
+			code = (char*) malloc((code_len + 1) * sizeof(char));
 			MPI_Bcast(code, code_len, MPI_CHAR, root, MPI_COMM_WORLD);
+			code[code_len] = '\0';
 
 			// compile and execute code
 			PyObject *src = Py_CompileString(code, "<libyt-root>", Py_single_input);
